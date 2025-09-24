@@ -1,6 +1,6 @@
 name: Deploy to Docker Host
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       image_tag:
@@ -21,98 +21,95 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    
+
     steps:
-    - name: Deploy to Docker Host
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.DOCKER_HOST }}
-        username: ${{ secrets.DOCKER_USERNAME }}
-        key: ${{ secrets.DOCKER_SSH_KEY }}
-        port: ${{ secrets.DOCKER_PORT || '22' }}
-        script: |
-          # Login to GitHub Container Registry
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Set image tag
-          IMAGE_TAG="${{ github.event.inputs.image_tag || 'latest' }}"
-          IMAGE_FULL="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
-          
-          # Check if container exists
-          CONTAINER_EXISTS=$(docker ps -a --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma || echo "")
-          
-          # Check if docker-compose is available and docker-compose.yml exists
-          if command -v docker-compose > /dev/null 2>&1; then
-            echo "Docker Compose detected, using compose deployment..."
+      - name: Deploy to Docker Host
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DOCKER_HOST }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          key: ${{ secrets.DOCKER_SSH_KEY }}
+          port: ${{ secrets.DOCKER_PORT || '22' }}
+          script: |
+            # Login to GitHub Container Registry
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Create temporary directory for deployment
-            mkdir -p /tmp/congratsemma-deploy
-            cd /tmp/congratsemma-deploy
+            # Set image tag
+            IMAGE_TAG="${{ github.event.inputs.image_tag || 'latest' }}"
+            IMAGE_FULL="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
             
-            # Create docker-compose.yml
-            cat > docker-compose.yml << 'EOF'
-          version: '3.8'
-          services:
-            congratsemma:
-              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}
-              container_name: congratsemma
-              restart: unless-stopped
-              ports:
-                - "${{ secrets.DOCKER_APP_PORT || '8080' }}:80"
-              healthcheck:
-                test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
-                timeout: 10s
-                interval: 30s
-                retries: 3
-                start_period: 40s
-          EOF
+            # Check if container exists
+            CONTAINER_EXISTS=$(docker ps -a --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma || echo "")
             
-            # Deploy with docker-compose
-            docker-compose pull
-            docker-compose up -d
-            
-            echo "✅ Deployed with Docker Compose"
-            
-          else
-            echo "Using direct Docker deployment..."
-          
-          else
-            echo "Using direct Docker deployment..."
-            
-            # If force recreate or container doesn't exist, recreate it
-            if [ "${{ github.event.inputs.force_recreate }}" = "true" ] || [ -n "$CONTAINER_EXISTS" ]; then
-              echo "Stopping and removing existing container..."
-              docker stop congratsemma || true
-              docker rm congratsemma || true
+            # Check if docker-compose is available and docker-compose.yml exists
+            if command -v docker-compose > /dev/null 2>&1; then
+              echo "Docker Compose detected, using compose deployment..."
+              
+              # Create temporary directory for deployment
+              mkdir -p /tmp/congratsemma-deploy
+              cd /tmp/congratsemma-deploy
+              
+              # Create docker-compose.yml
+              cat > docker-compose.yml << 'EOF'
+            version: '3.8'
+            services:
+              congratsemma:
+                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}
+                container_name: congratsemma
+                restart: unless-stopped
+                ports:
+                  - "${{ secrets.DOCKER_APP_PORT || '8080' }}:80"
+                healthcheck:
+                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+                  timeout: 10s
+                  interval: 30s
+                  retries: 3
+                  start_period: 40s
+            EOF
+              
+              # Deploy with docker-compose
+              docker-compose pull
+              docker-compose up -d
+              
+              echo "✅ Deployed with Docker Compose"
+              
+            else
+              echo "Using direct Docker deployment..."
+              
+              # If force recreate or container doesn't exist, recreate it
+              if [ "${{ github.event.inputs.force_recreate }}" = "true" ] || [ -n "$CONTAINER_EXISTS" ]; then
+                echo "Stopping and removing existing container..."
+                docker stop congratsemma || true
+                docker rm congratsemma || true
+              fi
+              
+              # Pull the specified image
+              echo "Pulling image: ${IMAGE_FULL}"
+              docker pull "${IMAGE_FULL}"
+              
+              # Run the new container
+              echo "Starting new container..."
+              docker run -d \
+                --name congratsemma \
+                --restart unless-stopped \
+                -p ${{ secrets.DOCKER_APP_PORT || '8080' }}:80 \
+                "${IMAGE_FULL}"
+                
             fi
             
-            # Pull the specified image
-            echo "Pulling image: ${IMAGE_FULL}"
-            docker pull "${IMAGE_FULL}"
+            # Verify container is running
+            sleep 5
+            if docker ps --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma > /dev/null; then
+              echo "✅ Container is running successfully"
+              docker ps --filter "name=congratsemma"
+            else
+              echo "❌ Container failed to start"
+              docker logs congratsemma
+              exit 1
+            fi
             
-            # Run the new container
-            echo "Starting new container..."
-            docker run -d \
-              --name congratsemma \
-              --restart unless-stopped \
-              -p ${{ secrets.DOCKER_APP_PORT || '8080' }}:80 \
-              "${IMAGE_FULL}"
-              
-          fi
-          
-          # Verify container is running
-          sleep 5
-          if docker ps --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma > /dev/null; then
-            echo "✅ Container is running successfully"
-            docker ps --filter "name=congratsemma"
-          else
-            echo "❌ Container failed to start"
-            docker logs congratsemma
-            exit 1
-          fi
-          
-          # Clean up old images
-          echo "Cleaning up old images..."
-          docker image prune -f
-          
-          echo "🚀 Deployment completed successfully!"
+            # Clean up old images
+            echo "Cleaning up old images..."
+            docker image prune -f
+            
+            echo "🚀 Deployment completed successfully!"
