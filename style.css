@@ -99,19 +99,7 @@ body {
     51%, 100% { opacity: 0; }
 }
 
-/* Green screen glow effect */
-.terminal-container {
-    animation: screenGlow 0.1s ease-in-out infinite alternate;
-}
-
-@keyframes screenGlow {
-    from {
-        box-shadow: 0 0 20px #00ff00;
-    }
-    to {
-        box-shadow: 0 0 25px #00ff00, 0 0 35px #00ff00;
-    }
-}
+/* Green screen glow effect - removed pulsing animation */
 
 /* Scrollbar styling for green screen theme */
 .screen-content::-webkit-scrollbar {

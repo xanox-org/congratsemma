@@ -61,6 +61,39 @@ class IBMi5250Terminal {
 
         // Handle option selection in WRKSPLF (option 5 = Display)
         this.setupWrksplf();
+        this.setupSubmenuEventListeners();
+    }
+
+    setupSubmenuEventListeners() {
+        // User tasks menu command input
+        const userTasksInput = document.getElementById('user-tasks-command');
+        if (userTasksInput) {
+            userTasksInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleUserTasks();
+                }
+            });
+        }
+
+        // Office tasks menu command input
+        const officeTasksInput = document.getElementById('office-tasks-command');
+        if (officeTasksInput) {
+            officeTasksInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleOfficeTasks();
+                }
+            });
+        }
+
+        // Programming menu command input
+        const programmingInput = document.getElementById('programming-command');
+        if (programmingInput) {
+            programmingInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleProgramming();
+                }
+            });
+        }
     }
 
     setupWrksplf() {
@@ -87,17 +120,22 @@ class IBMi5250Terminal {
 
     handleLogin() {
         const username = document.getElementById('username').value.toUpperCase();
-        const password = document.getElementById('password').value;
+        const password = document.getElementById('password').value.toUpperCase();
 
-        // Check for user 'EOU'
-        if (username === 'EOU') {
+        // Check for user 'EOU' and password 'EOU'
+        if (username === 'EOU' && password === 'EOU') {
             this.showScreen('main-menu');
             // Focus on command input
             setTimeout(() => {
                 document.getElementById('command-input').focus();
             }, 100);
+        } else if (username === 'EOU' && password !== 'EOU') {
+            // Clear password and show error for wrong password
+            document.getElementById('password').value = '';
+            alert('Invalid password. Please try again.');
+            document.getElementById('password').focus();
         } else {
-            // Clear password and show error (simplified)
+            // Clear password and show error for wrong username
             document.getElementById('password').value = '';
             alert('User not found. Please use EOU as username.');
             document.getElementById('username').focus();
@@ -112,6 +150,33 @@ class IBMi5250Terminal {
             setTimeout(() => {
                 document.getElementById('wrksplf-command').focus();
             }, 100);
+        } else if (command === '1') {
+            this.showScreen('user-tasks-screen');
+            setTimeout(() => {
+                document.getElementById('user-tasks-command').focus();
+            }, 100);
+        } else if (command === '2') {
+            this.showScreen('office-tasks-screen');
+            setTimeout(() => {
+                document.getElementById('office-tasks-command').focus();
+            }, 100);
+        } else if (command === '4') {
+            this.showScreen('programming-screen');
+            setTimeout(() => {
+                document.getElementById('programming-command').focus();
+            }, 100);
+        } else if (command === '5') {
+            this.showError('Communications not available', 'CPF9898: Function COMMUNICATIONS is not available at this time.');
+        } else if (command === '6') {
+            this.showError('Access denied', 'CPF9801: Object QSYS not found or access denied.');
+        } else if (command === '7') {
+            this.showError('Function restricted', 'CPF9810: Library QSERVICE not found. Problem handling restricted.');
+        } else if (command === '8') {
+            this.showError('Menu not found', 'CPF0001: Error found in application program. Menu display function unavailable.');
+        } else if (command === '9') {
+            this.showError('Service unavailable', 'CPF9899: Information Assistant options are currently unavailable. Try again later.');
+        } else if (command === '10') {
+            this.showError('Client Access restricted', 'CPF2817: Copy command ended because of error. Client Access/400 tasks not available.');
         } else if (command === '90') {
             // Sign off - go back to login
             this.showScreen('login-screen');
@@ -119,7 +184,7 @@ class IBMi5250Terminal {
         } else {
             // Unknown command
             document.getElementById('command-input').value = '';
-            // In a real system, this would show an error message
+            this.showError('Invalid selection', 'CPF0001: Error found in application program. Invalid menu selection or command.');
         }
     }
 
@@ -139,6 +204,109 @@ class IBMi5250Terminal {
         this.showScreen('congratulations-screen');
     }
 
+    showError(title, message) {
+        const errorContent = document.getElementById('error-content');
+        errorContent.textContent = `
+                                    ${title}
+
+${message}
+
+Press any key to continue.
+
+F3=Exit   F12=Cancel
+        `.trim();
+        
+        this.showScreen('error-screen');
+        
+        // Add temporary key listener to return to main menu
+        const handleErrorKey = (e) => {
+            document.removeEventListener('keydown', handleErrorKey);
+            this.showScreen('main-menu');
+            setTimeout(() => {
+                document.getElementById('command-input').focus();
+            }, 100);
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('keydown', handleErrorKey);
+        }, 100);
+    }
+
+    handleUserTasks() {
+        const command = document.getElementById('user-tasks-command').value.toUpperCase().trim();
+        document.getElementById('user-tasks-command').value = '';
+        
+        if (command === '1') {
+            this.showError('Access denied', 'CPF2207: Not authorized to object QSYS/CHGPWD in library QSYS.');
+        } else if (command === '2') {
+            this.showError('No messages', 'CPF2469: Message queue QSYSOPI for user EOU contains no messages.');
+        } else if (command === '3') {
+            this.showError('Queue not available', 'CPF3343: Output queue QPRINT not available.');
+        } else if (command === '4') {
+            this.showError('Service restricted', 'CPF9801: Object QOFFICE not found. Office Services not available.');
+        } else if (command === '5') {
+            this.showError('PDM unavailable', 'CPF9899: Programming Development Manager not licensed on this system.');
+        } else if (command === '') {
+            // Just return to previous screen if empty
+            this.showScreen('main-menu');
+            setTimeout(() => {
+                document.getElementById('command-input').focus();
+            }, 100);
+        } else {
+            this.showError('Invalid option', 'CPF0001: Error found in application program. Invalid selection.');
+        }
+    }
+
+    handleOfficeTasks() {
+        const command = document.getElementById('office-tasks-command').value.toUpperCase().trim();
+        document.getElementById('office-tasks-command').value = '';
+        
+        if (command === '1') {
+            this.showError('Document library unavailable', 'CPF9810: Library QDOC not found. Document services not available.');
+        } else if (command === '2') {
+            this.showError('Folder access denied', 'CPF2207: Not authorized to object QSYS/FOLDERS in library QSYS.');
+        } else if (command === '3') {
+            this.showError('Distribution restricted', 'CPF9899: Send distribution function not available. Contact system administrator.');
+        } else if (command === '4') {
+            this.showError('Calendar service down', 'CPF9898: Office calendar service is temporarily unavailable.');
+        } else if (command === '5') {
+            this.showError('Directory unavailable', 'CPF2817: Copy command ended because of error. Directory services not accessible.');
+        } else if (command === '') {
+            this.showScreen('main-menu');
+            setTimeout(() => {
+                document.getElementById('command-input').focus();
+            }, 100);
+        } else {
+            this.showError('Invalid option', 'CPF0001: Error found in application program. Invalid selection.');
+        }
+    }
+
+    handleProgramming() {
+        const command = document.getElementById('programming-command').value.toUpperCase().trim();
+        document.getElementById('programming-command').value = '';
+        
+        if (command === '1') {
+            this.showError('SEU not available', 'CPF9899: Source Entry Utility not licensed on this system.');
+        } else if (command === '2') {
+            this.showError('PDM access denied', 'CPF2207: Not authorized to Programming Development Manager.');
+        } else if (command === '3') {
+            this.showError('Utilities restricted', 'CPF9801: Object QSYS/UTIL not found. Programming utilities not available.');
+        } else if (command === '4') {
+            this.showError('Compiler unavailable', 'CPF9898: Compiler services are temporarily unavailable.');
+        } else if (command === '5') {
+            this.showError('Runtime error', 'CPF0001: Error found in application program. Cannot execute run command.');
+        } else if (command === '6') {
+            this.showError('Debugger not available', 'CPF9899: System debugger not available. Contact system administrator.');
+        } else if (command === '') {
+            this.showScreen('main-menu');
+            setTimeout(() => {
+                document.getElementById('command-input').focus();
+            }, 100);
+        } else {
+            this.showError('Invalid option', 'CPF0001: Error found in application program. Invalid selection.');
+        }
+    }
+
     handleF3() {
         // F3 = Exit - behavior depends on current screen
         switch (this.currentScreen) {
@@ -150,12 +318,20 @@ class IBMi5250Terminal {
                 this.clearForm();
                 break;
             case 'wrksplf-screen':
+            case 'user-tasks-screen':
+            case 'office-tasks-screen':
+            case 'programming-screen':
+            case 'error-screen':
                 this.showScreen('main-menu');
-                document.getElementById('command-input').focus();
+                setTimeout(() => {
+                    document.getElementById('command-input').focus();
+                }, 100);
                 break;
             case 'congratulations-screen':
                 this.showScreen('wrksplf-screen');
-                document.getElementById('wrksplf-command').focus();
+                setTimeout(() => {
+                    document.getElementById('wrksplf-command').focus();
+                }, 100);
                 break;
         }
     }
@@ -177,6 +353,11 @@ class IBMi5250Terminal {
         if (targetScreen) {
             targetScreen.classList.add('active');
             this.currentScreen = screenId;
+            
+            // Set up event listeners for the new screen
+            setTimeout(() => {
+                this.setupSubmenuEventListeners();
+            }, 50);
         }
     }
 
@@ -185,6 +366,16 @@ class IBMi5250Terminal {
         document.getElementById('password').value = '';
         document.getElementById('command-input').value = '';
         document.getElementById('wrksplf-command').value = '';
+        
+        // Clear submenu inputs if they exist
+        const userTasksInput = document.getElementById('user-tasks-command');
+        if (userTasksInput) userTasksInput.value = '';
+        
+        const officeTasksInput = document.getElementById('office-tasks-command');
+        if (officeTasksInput) officeTasksInput.value = '';
+        
+        const programmingInput = document.getElementById('programming-command');
+        if (programmingInput) programmingInput.value = '';
         
         setTimeout(() => {
             document.getElementById('username').focus();
