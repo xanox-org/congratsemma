@@ -97,11 +97,13 @@ class IBMi5250Terminal {
     }
 
     setupWrksplf() {
-        // Add click handler for the first spool file line
+        // Add event listener for option input fields and Enter processing
         setTimeout(() => {
             const wrksplf = document.getElementById('wrksplf-screen');
             if (wrksplf) {
                 const content = wrksplf.querySelector('.screen-content');
+                
+                // Add click handler for the first spool file line (legacy support)
                 content.addEventListener('click', (e) => {
                     // Check if click is on the CONGRATSEMMA line
                     const rect = content.getBoundingClientRect();
@@ -113,6 +115,16 @@ class IBMi5250Terminal {
                     if (lineNumber >= 8 && lineNumber <= 10) {
                         this.openCongratulations();
                     }
+                });
+
+                // Add Enter key handler for option inputs
+                const optionInputs = document.querySelectorAll('.option-input');
+                optionInputs.forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.processWrksplf();
+                        }
+                    });
                 });
             }
         }, 100);
@@ -194,9 +206,79 @@ class IBMi5250Terminal {
         if (command === '5') {
             // Display option - show first file (CONGRATSEMMA)
             this.openCongratulations();
+        } else if (command === '') {
+            // If no command, process the option fields
+            this.processWrksplf();
         } else {
-            // Clear command
+            // Clear command for other entries
             document.getElementById('wrksplf-command').value = '';
+        }
+    }
+
+    processWrksplf() {
+        // Get all option input values
+        const congratsOption = document.getElementById('opt-congratsemma').value.toUpperCase().trim();
+        const qpjoblogOption = document.getElementById('opt-qpjoblog').value.toUpperCase().trim();
+        const qsysprtOption = document.getElementById('opt-qsysprt').value.toUpperCase().trim();
+
+        // Process options in order of priority
+        if (congratsOption !== '') {
+            this.processSpoolFileOption('CONGRATSEMMA', congratsOption);
+        } else if (qpjoblogOption !== '') {
+            this.processSpoolFileOption('QPJOBLOG', qpjoblogOption);
+        } else if (qsysprtOption !== '') {
+            this.processSpoolFileOption('QSYSPRT', qsysprtOption);
+        }
+    }
+
+    processSpoolFileOption(fileName, option) {
+        // Clear all option inputs
+        document.getElementById('opt-congratsemma').value = '';
+        document.getElementById('opt-qpjoblog').value = '';
+        document.getElementById('opt-qsysprt').value = '';
+
+        switch (option) {
+            case '5':
+                // Display option
+                if (fileName === 'CONGRATSEMMA') {
+                    this.openCongratulations();
+                } else {
+                    this.showError('File not available', `CPF3203: Spooled file ${fileName} not available for display.`);
+                }
+                break;
+            case '4':
+                // Delete option
+                this.showError('Delete restricted', `CPF3310: Not authorized to delete spooled file ${fileName}.`);
+                break;
+            case '2':
+                // Change option
+                this.showError('Change not allowed', `CPF3320: Spooled file ${fileName} cannot be changed.`);
+                break;
+            case '3':
+                // Hold option
+                this.showError('Hold operation failed', `CPF3330: Spooled file ${fileName} already on hold or cannot be held.`);
+                break;
+            case '6':
+                // Release option
+                this.showError('Release not available', `CPF3340: Spooled file ${fileName} cannot be released.`);
+                break;
+            case '7':
+                // Messages option
+                this.showError('No messages', `CPF3350: No messages available for spooled file ${fileName}.`);
+                break;
+            case '8':
+                // Attributes option
+                this.showError('Attributes restricted', `CPF3360: Not authorized to display attributes for ${fileName}.`);
+                break;
+            case '9':
+                // Work with printing status
+                this.showError('Status unavailable', `CPF3370: Printing status not available for ${fileName}.`);
+                break;
+            default:
+                if (option !== '') {
+                    this.showError('Invalid option', `CPF0001: Option '${option}' is not valid. Valid options are 2, 3, 4, 5, 6, 7, 8, 9.`);
+                }
+                break;
         }
     }
 
@@ -376,6 +458,16 @@ F3=Exit   F12=Cancel
         
         const programmingInput = document.getElementById('programming-command');
         if (programmingInput) programmingInput.value = '';
+        
+        // Clear option inputs if they exist
+        const congratsOption = document.getElementById('opt-congratsemma');
+        if (congratsOption) congratsOption.value = '';
+        
+        const qpjoblogOption = document.getElementById('opt-qpjoblog');
+        if (qpjoblogOption) qpjoblogOption.value = '';
+        
+        const qsysprtOption = document.getElementById('opt-qsysprt');
+        if (qsysprtOption) qsysprtOption.value = '';
         
         setTimeout(() => {
             document.getElementById('username').focus();
