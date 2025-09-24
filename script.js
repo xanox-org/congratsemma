@@ -284,6 +284,91 @@ class IBMi5250Terminal {
 
     openCongratulations() {
         this.showScreen('congratulations-screen');
+        
+        // Add animations after screen is shown
+        setTimeout(() => {
+            this.animateCongratulationsMessage();
+        }, 100);
+    }
+
+    animateCongratulationsMessage() {
+        // Reset any existing animations
+        this.resetCongratulationsAnimations();
+        
+        // First, make all elements invisible initially
+        const allElements = [
+            'border-top', 'border-line1', 'border-line2', 'border-line3',
+            'border-line4', 'border-line5', 'border-line6', 'border-bottom',
+            'congrats-main', 'name-line', 'message-line1', 'message-line2',
+            'message-line3', 'message-line4', 'message-line5'
+        ];
+        
+        allElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+            }
+        });
+        
+        // Animate border elements first
+        const borderElements = [
+            'border-top', 'border-line1', 'border-line2', 'border-line3', 
+            'border-line4', 'border-line5', 'border-line6', 'border-bottom'
+        ];
+        
+        borderElements.forEach((id, index) => {
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    element.classList.add('animate-fade-in');
+                }, index * 100);
+            }
+        });
+        
+        // Animate main content with delays
+        const contentElements = [
+            { id: 'congrats-main', delay: 1000, glow: true },
+            { id: 'name-line', delay: 1500, glow: true },
+            { id: 'message-line1', delay: 2000 },
+            { id: 'message-line2', delay: 2200 },
+            { id: 'message-line3', delay: 2800 },
+            { id: 'message-line4', delay: 3200 },
+            { id: 'message-line5', delay: 3400 }
+        ];
+        
+        contentElements.forEach(({ id, delay, glow }) => {
+            const element = document.getElementById(id);
+            if (element) {
+                setTimeout(() => {
+                    element.classList.add('animate-fade-in');
+                    if (glow) {
+                        setTimeout(() => {
+                            element.classList.add('animate-glow');
+                        }, 800);
+                    }
+                }, delay);
+            }
+        });
+    }
+
+    resetCongratulationsAnimations() {
+        // Remove all animation classes from congratulations elements
+        const animatedElements = [
+            'border-top', 'border-line1', 'border-line2', 'border-line3',
+            'border-line4', 'border-line5', 'border-line6', 'border-bottom',
+            'congrats-main', 'name-line', 'message-line1', 'message-line2',
+            'message-line3', 'message-line4', 'message-line5'
+        ];
+        
+        animatedElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('animate-fade-in', 'animate-glow');
+                element.style.opacity = '';
+                element.style.transform = '';
+            }
+        });
     }
 
     showError(title, message) {

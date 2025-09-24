@@ -104,6 +104,37 @@ body {
     51%, 100% { opacity: 0; }
 }
 
+/* Spoolfile display animations */
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        text-shadow: 0 0 5px #00ff00;
+    }
+    50% {
+        text-shadow: 0 0 15px #00ff00, 0 0 25px #00ff00;
+    }
+}
+
+/* Animation classes for congratulations screen */
+#congratulations-screen .animate-fade-in {
+    opacity: 1 !important;
+    animation: fadeInSlide 0.8s ease-out;
+}
+
+#congratulations-screen .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
 /* Green screen glow effect - removed pulsing animation */
 
 /* Scrollbar styling for green screen theme */
