@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM i 5250 Green Screen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <span class="terminal-title">IBM i 5250</span>
+            <span class="terminal-status">QINTER</span>
+        </div>
+        
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen active">
+            <div class="screen-content">
+                <pre class="terminal-text">
+                    
+                    
+                               Welcome to IBM i
+                    
+                    
+                    User  . . . . . . . . <input type="text" id="username" class="terminal-input" maxlength="10">
+                    Password  . . . . . . <input type="password" id="password" class="terminal-input" maxlength="10">
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    F3=Exit   F12=Cancel
+                </pre>
+            </div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div id="main-menu" class="screen">
+            <div class="screen-content">
+                <pre class="terminal-text">
+                                    MAIN MENU
+
+  Select one of the following:
+
+     1. User tasks
+     2. Office tasks  
+     3. Work with Printer Output
+     4. Programming
+     5. Communications
+     6. Define or change the system
+     7. Problem handling
+     8. Display a menu
+     9. Information Assistant options
+    10. Client Access/400 tasks
+    90. Sign off
+
+  Selection or command
+  ===><input type="text" id="command-input" class="terminal-input command-line" maxlength="80">
+
+  F3=Exit   F4=Prompt   F12=Cancel   F23=Set initial menu
+                </pre>
+            </div>
+        </div>
+
+        <!-- WRKSPLF Screen -->
+        <div id="wrksplf-screen" class="screen">
+            <div class="screen-content">
+                <pre class="terminal-text">
+                             Work with All Spooled Files
+
+Type options, press Enter.
+  2=Change   3=Hold   4=Delete   5=Display   6=Release   7=Messages
+  8=Attributes   9=Work with printing status
+
+Opt  File        User        User Data    Queue      Status    Pages
+
+ _   CONGRATSEMMA EOU         DIPLOMA      QPRINT     RDY           1
+ _   QPJOBLOG    EOU                      QPRINT     RDY           2
+ _   QSYSPRT     EOU                      QPRINT     RDY           1
+
+
+
+                                                             Bottom
+Command
+===><input type="text" id="wrksplf-command" class="terminal-input command-line" maxlength="80">
+
+F3=Exit   F11=View 2   F12=Cancel   F24=More keys
+                </pre>
+            </div>
+        </div>
+
+        <!-- Congratulations Message Screen -->
+        <div id="congratulations-screen" class="screen">
+            <div class="screen-content">
+                <pre class="terminal-text">
+                          Display Spooled File
+
+File . . . . . :   CONGRATSEMMA
+User . . . . . :   EOU
+User data  . . :   DIPLOMA
+Queue  . . . . :   QPRINT
+
+
+    ╔════════════════════════════════════════════════════════════════╗
+    ║                                                                ║
+    ║                        CONGRATULATIONS!                        ║
+    ║                                                                ║
+    ║                            Emma!                               ║
+    ║                                                                ║
+    ║     We are so proud to celebrate your achievement of your      ║
+    ║                   Bachelor of Science diploma!                 ║
+    ║                                                                ║
+    ║          Your hard work and dedication have paid off.          ║
+    ║                                                                ║
+    ║              Wishing you all the best in your                  ║
+    ║                      future endeavors!                         ║
+    ║                                                                ║
+    ╚════════════════════════════════════════════════════════════════╝
+
+
+F3=Exit   F12=Cancel                                         Bottom
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
