@@ -87,6 +87,11 @@ body {
     width: 70ch;
 }
 
+.option-input {
+    width: 2ch;
+    text-align: center;
+}
+
 /* Cursor effect */
 .terminal-input:focus::after {
     content: '_';
