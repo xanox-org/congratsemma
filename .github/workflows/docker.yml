@@ -83,5 +83,18 @@ jobs:
             -p ${{ secrets.DOCKER_APP_PORT || '8080' }}:80 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           
+          # Verify container is running
+          sleep 5
+          if docker ps --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma > /dev/null; then
+            echo "✅ Container is running successfully"
+            docker ps --filter "name=congratsemma"
+          else
+            echo "❌ Container failed to start"
+            docker logs congratsemma
+            exit 1
+          fi
+          
           # Clean up old images
           docker image prune -f
+          
+          echo "🚀 Deployment completed successfully!"
