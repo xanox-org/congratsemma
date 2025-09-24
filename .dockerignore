@@ -8,6 +8,12 @@ README.md
 # GitHub workflows (not needed in container)
 .github
 
+# Docker files (not needed in container)
+Dockerfile
+.dockerignore
+docker-compose.yml
+setup-docker-host.sh
+
 # Temporary files
 *.tmp
 *.log
