@@ -61,9 +61,9 @@ jobs:
     - name: Deploy to Docker Host
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.DOCKER_HOST }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        key: ${{ secrets.DOCKER_SSH_KEY }}
         port: ${{ secrets.DOCKER_PORT || '22' }}
         script: |
           # Login to GitHub Container Registry
