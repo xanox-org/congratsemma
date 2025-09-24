@@ -53,9 +53,9 @@ Configure these secrets in your GitHub organization for automated deployment:
 
 | Secret Name | Description | Example |
 |-------------|-------------|---------|
-| `DOCKER_HOST` | IP address or hostname of your Docker host | `192.168.1.100` |
-| `DOCKER_USERNAME` | SSH username for Docker host | `ubuntu` |
-| `DOCKER_SSH_KEY` | Private SSH key for Docker host authentication | `-----BEGIN OPENSSH PRIVATE KEY-----` |
+| `SSH_HOST` | IP address or hostname of your Docker host | `192.168.1.100` |
+| `SSH_USER` | SSH username for Docker host | `ubuntu` |
+| `SSH_PRIVATE_KEY` | Private SSH key for Docker host authentication | `-----BEGIN OPENSSH PRIVATE KEY-----` |
 | `DOCKER_PORT` | SSH port (optional, defaults to 22) | `22` |
 | `DOCKER_APP_PORT` | Port to expose the app on (optional, defaults to 8080) | `8080` |
 
