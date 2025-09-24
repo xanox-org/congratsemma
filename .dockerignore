@@ -1,0 +1,18 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+
+# GitHub workflows (not needed in container)
+.github
+
+# Temporary files
+*.tmp
+*.log
+
+# Development files
+node_modules
+.vscode
+.idea
