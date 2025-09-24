@@ -27,8 +27,8 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.DOCKER_PORT || '22' }}
           script: |
             # Login to GitHub Container Registry
@@ -50,11 +50,11 @@ jobs:
               cd /tmp/congratsemma-deploy
               
               # Create docker-compose.yml
-              cat > docker-compose.yml << 'EOF'
+              cat > docker-compose.yml << EOF
             version: '3.8'
             services:
               congratsemma:
-                image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}
+                image: \${IMAGE_FULL}
                 container_name: congratsemma
                 restart: unless-stopped
                 ports:
@@ -76,7 +76,7 @@ jobs:
             else
               echo "Using direct Docker deployment..."
               
-              # If force recreate or container doesn't exist, recreate it
+              # If force recreate or container exists, recreate it
               if [ "${{ github.event.inputs.force_recreate }}" = "true" ] || [ -n "$CONTAINER_EXISTS" ]; then
                 echo "Stopping and removing existing container..."
                 docker stop congratsemma || true

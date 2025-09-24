@@ -61,9 +61,9 @@ jobs:
     - name: Deploy to Docker Host
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.DOCKER_HOST }}
-        username: ${{ secrets.DOCKER_USERNAME }}
-        key: ${{ secrets.DOCKER_SSH_KEY }}
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.DOCKER_PORT || '22' }}
         script: |
           # Login to GitHub Container Registry
@@ -83,5 +83,18 @@ jobs:
             -p ${{ secrets.DOCKER_APP_PORT || '8080' }}:80 \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           
+          # Verify container is running
+          sleep 5
+          if docker ps --filter "name=congratsemma" --format "{{.Names}}" | grep -w congratsemma > /dev/null; then
+            echo "✅ Container is running successfully"
+            docker ps --filter "name=congratsemma"
+          else
+            echo "❌ Container failed to start"
+            docker logs congratsemma
+            exit 1
+          fi
+          
           # Clean up old images
           docker image prune -f
+          
+          echo "🚀 Deployment completed successfully!"
